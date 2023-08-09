@@ -1,11 +1,40 @@
 import cv2
 import imutils
 import numpy as np
+from PIL import Image
 from tensorflow.keras.models import load_model
 
 output_class = ['down', 'left', 'right', 'up']
 
-def detect_directions_from_img(image_path, model):
+# Load the trained model
+model = load_model('trained-model/arrow_orientation_model.h5')
+
+def predict_direction2(input_cv2_image):
+
+    # Preprocess the input image from cv2.imread
+    target_size = (28, 28)  # Make sure it matches the size your model expects
+
+    # Convert BGR image to RGB (since PIL uses RGB)
+    input_image_rgb = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2RGB)
+
+    # Resize and preprocess the image
+    pil_image = Image.fromarray(input_image_rgb)
+    image = pil_image.resize(target_size)
+    image = np.array(image) / 255.0  # Normalize pixel values to [0, 1]
+    image = np.expand_dims(image, axis=0)  # Add batch dimension
+
+    # Make predictions
+    predictions = model.predict(image)
+
+    # Interpret the predictions
+    predicted_class = np.argmax(predictions)  # Get the index of the highest probability class
+    # Here, you might need a class mapping to convert index to class label
+
+    return output_class[predicted_class]
+
+
+
+def detect_directions_from_img(image_path):
     # Read the image from the file
     image = cv2.imread(image_path)
 
@@ -35,24 +64,14 @@ def detect_directions_from_img(image_path, model):
         if abs(w - h) > 10 or h < 30 or w < 30:
             continue
 
-        region = image[y:y+h, x:x+w]
+        contour_region = image[y:y+h, x:x+w]
+        predicted_class = predict_direction2(contour_region)
 
-        # Preprocess the region for prediction
-        resized_region = cv2.resize(region, (28, 28))
-        resized_region = resized_region / 255.0  # Normalize pixel values
-        resized_region = resized_region[np.newaxis, :, :, :]
-
-        # Predict using the model
-        predictions = model.predict(resized_region)
-        predicted_class = np.argmax(predictions)
-
-        directions.append(output_class[predicted_class])
+        directions.append(predicted_class)
     
     return directions
 
-# Load the trained model
-model = load_model('trained-model/arrow_orientation_model.h5')
 
 # Call the function with the input image path - this image is the cropped KEYS AREA
-dirs = detect_directions_from_img('resources/s1-crop.png', model)
+dirs = detect_directions_from_img('resources/arrows2.png')
 print(dirs)
