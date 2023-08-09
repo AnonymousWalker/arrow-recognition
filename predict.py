@@ -67,9 +67,17 @@ def predict_direction2(input_cv2_image):
 
 
 
-for i in range(0, 8):
-    input_image_path = 'out/cropped_contour_{0}.png'.format(i)
-    input_cv2_image = cv2.imread(input_image_path)
+# for i in range(0, 8):
+#     input_image_path = 'out/cropped_contour_{0}.png'.format(i)
+#     input_cv2_image = cv2.imread(input_image_path)
 
-    # Use the modified function to make predictions
-    predict_direction2(input_cv2_image)
+#     # Use the modified function to make predictions
+#     predict_direction2(input_cv2_image)
+
+
+input_image_path = 'out/captured.png'
+input_cv2_image = cv2.imread(input_image_path)
+
+# Use the modified function to make predictions
+d = predict_direction2(input_cv2_image)
+print(d)
