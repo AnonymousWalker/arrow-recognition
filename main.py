@@ -30,6 +30,11 @@ def detect_directions_from_img(image_path, model):
     for contour in cnts:
         # Extract the region corresponding to the contour
         x, y, w, h = cv2.boundingRect(contour)
+
+        # filter square regions resembling arrow key
+        if abs(w - h) > 10 or h < 30 or w < 30:
+            continue
+
         region = image[y:y+h, x:x+w]
 
         # Preprocess the region for prediction
