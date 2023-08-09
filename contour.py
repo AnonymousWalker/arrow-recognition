@@ -24,10 +24,12 @@ def find_contours(image_path):
 if __name__ == "__main__":
     # Provide the path to your image file
     # image_path = "resources/arr2.png"
-    image_path = "test-data/arrows2.png"
+    image_path = "resources/arrows.png"
 
     # Find contours in the image
     contours = find_contours(image_path)
+    contours = sorted(contours, key=lambda c: cv2.boundingRect(c)[0])
+
 
     # Read the original image
     original_image = cv2.imread(image_path)
@@ -36,6 +38,10 @@ if __name__ == "__main__":
     for i, contour in enumerate(contours):
         # Get the bounding rectangle of the contour
         x, y, w, h = cv2.boundingRect(contour)
+
+        # filter out images that aren't square-ish
+        if abs(w - h) > 10 or h < 30 or w < 30:
+            continue
 
         # Crop the region of interest (ROI) from the original image
         cropped_roi = original_image[y:y+h, x:x+w]
