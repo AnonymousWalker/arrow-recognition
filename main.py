@@ -1,12 +1,15 @@
 import cv2
+import time
 import imutils
 import numpy as np
 import mss
 import pywinauto
+from pywinauto import keyboard as pwkeyboard
 import keyboard
 from PIL import Image
 from tensorflow.keras.models import load_model
 
+KEY_TYPING_SLEEP = 0.0005
 output_class = ['down', 'left', 'right', 'up']
 model = load_model('trained-model/arrow_orientation_model.h5')
 
@@ -80,10 +83,7 @@ def detect_directions_from_img(image):
 
 
 # area: (left, top, width, height)
-def capture_screenshot_with_app(pid, area):
-    app = pywinauto.Application().connect(process=pid)
-    # window = app.window()  # Get the main window of the application
-    window = app["Audition"]
+def capture_screenshot_app_window(window, area):
     window.set_focus()
     window_rect = window.rectangle()
     screenshot_area = {
@@ -100,24 +100,43 @@ def capture_screenshot_with_app(pid, area):
         return screenshot_bgr
 
 
-def trigger_screenshot():    
-    process_id = 21672
+def trigger_screenshot(process_id):    
     area = (280, 540, 470, 40) # (left, top, width, height)
 
+    app = pywinauto.Application().connect(process=process_id)
+    # window = app.window()  # Get the main window of the application
+    window = app["Audition"]
+
     # Capture a screenshot of the application window and save it
-    captured_image = capture_screenshot_with_app(process_id, area)
+    captured_image = capture_screenshot_app_window(window, area)
 
     # Call the function to detect directions from the captured image
     dirs = detect_directions_from_img(captured_image)
     print(dirs)
 
+    send_key_input(window, dirs)
+
     cv2.imwrite('out/captured.png', captured_image)
+
+
+def send_key_input(window, arrows):
+    window.set_focus()
+    for arr in arrows:
+        key = class_to_key[arr]
+
+        print('sending: ' + key)
+        # window.type_keys(key)
+        # window.type_keys('{b}')
+        pwkeyboard.send_keys('')
+        time.sleep(KEY_TYPING_SLEEP)
 
 
 # Register the trigger function to the desired key press event
 def key_listener(e):
     if e.event_type == keyboard.KEY_DOWN and e.name == 'enter':
-        trigger_screenshot()
+
+        pid = 21832
+        trigger_screenshot(pid)
         
 
 keyboard.hook(callback=key_listener)
