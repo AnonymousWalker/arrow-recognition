@@ -23,7 +23,7 @@ def find_contours(image_path):
 
 def find_and_save_contours():
     # Provide the path to your image file
-    image_path = "resources/arrows2.png"
+    image_path = "resources/rev1.png"
 
     # Find contours in the image
     contours = find_contours(image_path)
@@ -38,7 +38,7 @@ def find_and_save_contours():
         x, y, w, h = cv2.boundingRect(contour)
 
         # filter out images that aren't square-like
-        if abs(w - h) > 10 or h < 30 or w < 30:
+        if abs(w - h) > 15 or h < 20 or w < 20:
             continue
 
         # Crop the region of interest (ROI) from the original image

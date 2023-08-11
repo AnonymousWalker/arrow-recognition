@@ -7,10 +7,22 @@ import pywinauto
 from pywinauto import keyboard as pwkeyboard
 import keyboard
 from PIL import Image
+import tensorflow as tf
 from tensorflow.keras.models import load_model
+from src.keyboard_ctrl import KeyDef, KeyboardCtrl
+from src.key_color import KeyColor
 
-KEY_TYPING_SLEEP = 0.0005
+tf.get_logger().setLevel('ERROR')
+
+KEY_TYPING_SLEEP = 0.00001
 output_class = ['down', 'left', 'right', 'up']
+output_class_reversed = ['up', 'right', 'left', 'down'] # reversed list of output_class
+class_to_key = { 
+    'up': KeyDef.VK_UP, 
+    'down': KeyDef.VK_DOWN, 
+    'left': KeyDef.VK_LEFT, 
+    'right': KeyDef.VK_RIGHT
+}
 model = load_model('trained-model/arrow_orientation_model.h5')
 
 # Load the trained model
@@ -29,19 +41,31 @@ def predict_direction2(input_cv2_image):
     image = np.expand_dims(image, axis=0)  # Add batch dimension
 
     # Make predictions
-    predictions = model.predict(image)
+    predictions = model.predict(image, verbose=0)
 
     # Interpret the predictions
     predicted_class = np.argmax(predictions)  # Get the index of the highest probability class
     # Here, you might need a class mapping to convert index to class label
 
-    return output_class[predicted_class]
+    return predicted_class
 
+
+def is_red(image):
+    # Split the image into color channels
+    blue_channel, green_channel, red_channel = cv2.split(image)
+    
+    # Calculate the average intensities of red and blue channels
+    average_red_intensity = np.mean(red_channel)
+    average_blue_intensity = np.mean(blue_channel)
+    
+    # Compare average intensities to determine if the image is more red than blue
+    if average_red_intensity > average_blue_intensity:
+        return True
+    else:
+        return False    
 
 
 def detect_directions_from_img(image):
-    # Read the image from the file
-    # image = cv2.imread(image_path)
 
     # Convert the image to grayscale
     gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -66,20 +90,18 @@ def detect_directions_from_img(image):
         x, y, w, h = cv2.boundingRect(contour)
 
         # filter square regions resembling arrow key
-        if abs(w - h) > 10 or h < 30 or w < 30:
+        if abs(w - h) > 15 or h < 20 or w < 20:
             continue
 
         contour_region = image[y:y+h, x:x+w]
-        predicted_class = predict_direction2(contour_region)
+        predicted_class_id = predict_direction2(contour_region)
 
-        directions.append(predicted_class)
+        # determine if the direction is reversed (red key)
+        predicted_result = output_class_reversed[predicted_class_id] if is_red(contour_region) else output_class[predicted_class_id]
+            
+        directions.append(predicted_result)
     
     return directions
-
-
-# Call the function with the input image path - this image is the cropped KEYS AREA
-# dirs = detect_directions_from_img('resources/arrows2.png')
-# print(dirs)
 
 
 # area: (left, top, width, height)
@@ -100,50 +122,42 @@ def capture_screenshot_app_window(window, area):
         return screenshot_bgr
 
 
-def trigger_screenshot(process_id):    
+def trigger_screenshot(window):    
     area = (280, 540, 470, 40) # (left, top, width, height)
-
-    app = pywinauto.Application().connect(process=process_id)
-    # window = app.window()  # Get the main window of the application
-    window = app["Audition"]
 
     # Capture a screenshot of the application window and save it
     captured_image = capture_screenshot_app_window(window, area)
 
     # Call the function to detect directions from the captured image
     dirs = detect_directions_from_img(captured_image)
-    print(dirs)
 
     send_key_input(window, dirs)
 
-    cv2.imwrite('out/captured.png', captured_image)
+    # cv2.imwrite('out/captured{0}.png'.format(time.time()), captured_image)
 
 
 def send_key_input(window, arrows):
     window.set_focus()
+    print(arrows)
     for arr in arrows:
         key = class_to_key[arr]
 
-        print('sending: ' + key)
-        # window.type_keys(key)
-        # window.type_keys('{b}')
-        pwkeyboard.send_keys('')
+        KeyboardCtrl.press_and_release(key)
         time.sleep(KEY_TYPING_SLEEP)
 
 
 # Register the trigger function to the desired key press event
-def key_listener(e):
+def key_listener(e, window):
     if e.event_type == keyboard.KEY_DOWN and e.name == 'enter':
-
-        pid = 21832
-        trigger_screenshot(pid)
+        trigger_screenshot(window)
         
 
-keyboard.hook(callback=key_listener)
-# Keep the script running
+# main
+pid = 18320
+app = pywinauto.Application().connect(process=pid)
+window = app["Audition"]
+keyboard.hook(callback=lambda e: key_listener(e, window))
 keyboard.wait('esc')  # Wait for the 'esc' key to exit
-
-# Unregister the trigger function
 keyboard.unhook_all()
 
 
@@ -152,6 +166,6 @@ keyboard.unhook_all()
 # captured_img = capture_screenshot_with_app(process_id, area)
 
 
-# image = cv2.imread('out/captured.png')
+# image = cv2.imread('resources/rev1.png')
 # d = detect_directions_from_img(image)
 # print(d)
