@@ -1,108 +1,27 @@
 import cv2
 import time
-import imutils
 import numpy as np
 import mss
 import pywinauto
 from pywinauto import keyboard as pwkeyboard
 import keyboard
-from PIL import Image
 import tensorflow as tf
-from tensorflow.keras.models import load_model
 from src.keyboard_ctrl import KeyDef, KeyboardCtrl
 from src.key_color import KeyColor
+from src.image_util import *
+from src.image_processor import detect_directions_from_img
+import threading
+
 
 tf.get_logger().setLevel('ERROR')
 
-KEY_TYPING_SLEEP = 0.00001
-output_class = ['down', 'left', 'right', 'up']
-output_class_reversed = ['up', 'right', 'left', 'down'] # reversed list of output_class
+KEY_TYPING_SLEEP = 0.0005
 class_to_key = { 
     'up': KeyDef.VK_UP, 
     'down': KeyDef.VK_DOWN, 
     'left': KeyDef.VK_LEFT, 
     'right': KeyDef.VK_RIGHT
 }
-model = load_model('trained-model/arrow_orientation_model.h5')
-
-# Load the trained model
-
-def predict_direction2(input_cv2_image):
-    # Preprocess the input image from cv2.imread
-    target_size = (28, 28)  # Make sure it matches the size your model expects
-
-    # Convert BGR image to RGB (since PIL uses RGB)
-    input_image_rgb = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2RGB)
-
-    # Resize and preprocess the image
-    pil_image = Image.fromarray(input_image_rgb)
-    image = pil_image.resize(target_size)
-    image = np.array(image) / 255.0  # Normalize pixel values to [0, 1]
-    image = np.expand_dims(image, axis=0)  # Add batch dimension
-
-    # Make predictions
-    predictions = model.predict(image, verbose=0)
-
-    # Interpret the predictions
-    predicted_class = np.argmax(predictions)  # Get the index of the highest probability class
-    # Here, you might need a class mapping to convert index to class label
-
-    return predicted_class
-
-
-def is_red(image):
-    # Split the image into color channels
-    blue_channel, green_channel, red_channel = cv2.split(image)
-    
-    # Calculate the average intensities of red and blue channels
-    average_red_intensity = np.mean(red_channel)
-    average_blue_intensity = np.mean(blue_channel)
-    
-    # Compare average intensities to determine if the image is more red than blue
-    if average_red_intensity > average_blue_intensity:
-        return True
-    else:
-        return False    
-
-
-def detect_directions_from_img(image):
-
-    # Convert the image to grayscale
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Apply Gaussian blur to reduce noise
-    blurred_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
-
-    # Apply binary thresholding to create a binary image
-    _, threshold_image = cv2.threshold(blurred_image, 100, 255, cv2.THRESH_BINARY)
-
-    # Find contours in the binary image
-    cnts = cv2.findContours(threshold_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    cnts = imutils.grab_contours(cnts)
-
-    # Sort contours by x-coordinate
-    cnts = sorted(cnts, key=lambda c: cv2.boundingRect(c)[0])
-
-    directions = []
-
-    for contour in cnts:
-        # Extract the region corresponding to the contour
-        x, y, w, h = cv2.boundingRect(contour)
-
-        # filter square regions resembling arrow key
-        if abs(w - h) > 15 or h < 20 or w < 20:
-            continue
-
-        contour_region = image[y:y+h, x:x+w]
-        predicted_class_id = predict_direction2(contour_region)
-
-        # determine if the direction is reversed (red key)
-        predicted_result = output_class_reversed[predicted_class_id] if is_red(contour_region) else output_class[predicted_class_id]
-            
-        directions.append(predicted_result)
-    
-    return directions
-
 
 # area: (left, top, width, height)
 def capture_screenshot_app_window(window, area):
@@ -148,14 +67,37 @@ def send_key_input(window, arrows):
 
 # Register the trigger function to the desired key press event
 def key_listener(e, window):
-    if e.event_type == keyboard.KEY_DOWN and e.name == 'enter':
-        trigger_screenshot(window)
+    if e.event_type == keyboard.KEY_DOWN:
+        if e.name == 'enter':
+            trigger_screenshot(window)
+        # if e.name == 'p': # capture screenshot
+        #     captured = capture_screenshot_app_window(window, area=(515,515,170,15))
+        #     cv2.imwrite('out/captured{0}.png'.format(time.time()), captured)
+        if e.name == 'page up':
+            None # increase delay
+        if e.name == 'page down':
+            None # reduce delay
         
+# press perfect when it's time
+def watch_perfect(window, perfect_area):
+    while True:
+        captured = capture_screenshot_app_window(window, perfect_area)
+        time.sleep(0.1) 
+        if is_more_red_than_white(captured):
+            KeyboardCtrl.press_and_release(KeyDef.VK_SPACE)
+            time.sleep(0.5)
+            trigger_screenshot(window)
 
 # main
-pid = 18320
+pid = 17088
 app = pywinauto.Application().connect(process=pid)
 window = app["Audition"]
+
+perfect_area = (634, 518, 10, 10)
+perfect_thread = threading.Thread(target=lambda: watch_perfect(window, perfect_area))
+perfect_thread.daemon = True  # Set the thread as a daemon so it exits when the main thread exits
+perfect_thread.start()
+
 keyboard.hook(callback=lambda e: key_listener(e, window))
 keyboard.wait('esc')  # Wait for the 'esc' key to exit
 keyboard.unhook_all()
@@ -169,3 +111,5 @@ keyboard.unhook_all()
 # image = cv2.imread('resources/rev1.png')
 # d = detect_directions_from_img(image)
 # print(d)
+
+
