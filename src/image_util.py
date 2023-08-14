@@ -1,5 +1,7 @@
 import cv2
 import numpy as np
+import mss
+import time
 
 def is_red(image):
     # Split the image into color channels
@@ -29,3 +31,35 @@ def is_more_red_than_white(image):
         return True
     else:
         return False
+    
+def count_red_pixels(image):
+    # Convert the image to HSV color space
+    hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    
+    # Define the lower and upper bounds for detecting red color
+    lower_red = np.array([0, 100, 100])
+    upper_red = np.array([10, 255, 255])
+    
+    # Create a mask to isolate red pixels
+    red_mask = cv2.inRange(hsv_image, lower_red, upper_red)
+    
+    # Count the number of red pixels
+    red_pixel_count = np.sum(red_mask > 0)
+    
+    return red_pixel_count
+
+def capture_screenshot_with_time(window, area):
+    window_rect = window.rectangle()
+    screenshot_area = {
+        "left": window_rect.left + area[0],
+        "top": window_rect.top + area[1],
+        "width": area[2],
+        "height": area[3],
+    }
+    with mss.mss() as sct:
+        timestamp = time.time()
+        screenshot = sct.grab(screenshot_area)
+        screenshot_np = np.array(screenshot)
+        screenshot_bgr = cv2.cvtColor(screenshot_np, cv2.COLOR_RGBA2RGB)
+        
+        return screenshot_bgr, timestamp
