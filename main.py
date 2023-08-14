@@ -130,7 +130,7 @@ def track_thread(window, track_area):
 
 
 def arrows_thread(window):
-    time_to_process_arrows = PERFECT_POS_X / speed
+    time_to_process_arrows = AFTER_PERFECT_POS_X / speed
     _thread = threading.Timer(time_to_process_arrows, lambda: process_arrows(window))
     _thread.start()
     
