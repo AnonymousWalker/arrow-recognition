@@ -3,8 +3,8 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
-# class_labels = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right']
-class_labels = ['up', 'down', 'left', 'right']
+class_labels = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right'] # 8K
+# class_labels = ['up', 'down', 'left', 'right']
 
 # Define the CNN model
 model = models.Sequential([
@@ -14,7 +14,7 @@ model = models.Sequential([
     layers.MaxPooling2D((2, 2)),
     layers.Flatten(),
     layers.Dense(128, activation='relu'),
-    layers.Dense(4, activation='softmax')  # 4 classes: up, down, left, right
+    layers.Dense(8, activation='softmax')  # number of classes
 ])
 
 # Compile the model
@@ -25,7 +25,7 @@ model.compile(optimizer='adam',
 # Load and preprocess your dataset using ImageDataGenerator
 train_datagen = ImageDataGenerator(rescale=1.0/255, validation_split=0.2)
 train_generator = train_datagen.flow_from_directory(
-    'training-data/resized_arrows',
+    'training-data/resized_arrows_8k',
     target_size=(28, 28),
     color_mode='grayscale',
     batch_size=32,
@@ -47,4 +47,4 @@ validation_generator = train_datagen.flow_from_directory(
 model.fit(train_generator, validation_data=validation_generator, epochs=10)
 
 # Save the trained model
-model.save('trained-model/new_model.h5')
+model.save('trained-model/new_model_8k.h5')

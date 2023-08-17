@@ -10,10 +10,11 @@ import cv2
 #     'right': 2
 # }
 # output_class = ['down', 'left', 'right', 'up']
-output_class = ['up', 'down', 'left', 'right']
+# output_class = ['up', 'down', 'left', 'right']
+output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right'] # 8K
 
 # Load the trained model
-model = load_model('trained-model/new_model.h5')  # Replace with the path to your trained model
+model = load_model('trained-model/new_model_8k.h5')  # Replace with the path to your trained model
 
 def predict_direction(input_file):
 
@@ -68,15 +69,16 @@ def predict_direction2(input_cv2_image):
 
 
 
-for i in range(1, 10):
-    input_image_path = "resources/{0}.png".format(i)
+res = []
+for i in range(1, 18):
+    input_image_path = "resources/manual-testing/_ ({0}).png".format(i)
     input_cv2_image = cv2.imread(input_image_path)
 
     # Use the modified function to make predictions
     d = predict_direction2(input_cv2_image)
-    print(d)
+    res.append(d)
 
-
+print(res)
 # input_image_path = 'resources/3.png'
 # input_cv2_image = cv2.imread(input_image_path)
 # d = predict_direction2(input_cv2_image)
