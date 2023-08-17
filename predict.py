@@ -9,10 +9,11 @@ import cv2
 #     'left': 1,
 #     'right': 2
 # }
-output_class = ['down', 'left', 'right', 'up']
+# output_class = ['down', 'left', 'right', 'up']
+output_class = ['up', 'down', 'left', 'right']
 
 # Load the trained model
-model = load_model('trained-model/arrow_orientation_model.h5')  # Replace with the path to your trained model
+model = load_model('trained-model/new_model.h5')  # Replace with the path to your trained model
 
 def predict_direction(input_file):
 
@@ -48,7 +49,7 @@ def predict_direction2(input_cv2_image):
     target_size = (28, 28)  # Make sure it matches the size your model expects
 
     # Convert BGR image to RGB (since PIL uses RGB)
-    input_image_rgb = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2RGB)
+    input_image_rgb = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2GRAY)
 
     # Resize and preprocess the image
     pil_image = Image.fromarray(input_image_rgb)
@@ -67,17 +68,16 @@ def predict_direction2(input_cv2_image):
 
 
 
-# for i in range(0, 8):
-#     input_image_path = 'out/cropped_contour_{0}.png'.format(i)
-#     input_cv2_image = cv2.imread(input_image_path)
+for i in range(1, 10):
+    input_image_path = "resources/{0}.png".format(i)
+    input_cv2_image = cv2.imread(input_image_path)
 
-#     # Use the modified function to make predictions
-#     predict_direction2(input_cv2_image)
+    # Use the modified function to make predictions
+    d = predict_direction2(input_cv2_image)
+    print(d)
 
 
-input_image_path = 'out/captured.png'
-input_cv2_image = cv2.imread(input_image_path)
-
-# Use the modified function to make predictions
-d = predict_direction2(input_cv2_image)
-print(d)
+# input_image_path = 'resources/3.png'
+# input_cv2_image = cv2.imread(input_image_path)
+# d = predict_direction2(input_cv2_image)
+# print(d)
