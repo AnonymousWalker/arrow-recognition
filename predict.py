@@ -14,7 +14,7 @@ import cv2
 output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right'] # 8K
 
 # Load the trained model
-model = load_model('trained-model/new_model_8k.h5')  # Replace with the path to your trained model
+model = load_model('trained-model/model_v2-8k.h5')  # Replace with the path to your trained model
 
 def predict_direction(input_file):
 
@@ -49,11 +49,10 @@ def predict_direction2(input_cv2_image):
     # Preprocess the input image from cv2.imread
     target_size = (28, 28)  # Make sure it matches the size your model expects
 
-    # Convert BGR image to RGB (since PIL uses RGB)
-    input_image_rgb = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2GRAY)
+    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_RGB2GRAY)
 
     # Resize and preprocess the image
-    pil_image = Image.fromarray(input_image_rgb)
+    pil_image = Image.fromarray(input_image_converted)
     image = pil_image.resize(target_size)
     image = np.array(image) / 255.0  # Normalize pixel values to [0, 1]
     image = np.expand_dims(image, axis=0)  # Add batch dimension
