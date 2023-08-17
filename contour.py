@@ -51,4 +51,33 @@ def find_and_save_contours():
 
     print("Cropped contour regions saved as individual images.")
 
-find_and_save_contours()
+def find_and_save_contours_batch(image_path, id):
+    # Provide the path to your image file
+
+    # Find contours in the image
+    contours = find_contours(image_path)
+
+    # Read the original image
+    original_image = cv2.imread(image_path)
+
+    # Iterate through contours, crop and save them as individual images
+    for i, contour in enumerate(contours):
+        # Get the bounding rectangle of the contour
+        x, y, w, h = cv2.boundingRect(contour)
+
+        # filter out images that aren't square-like
+        if abs(w - h) > 15 or h < 20 or w < 20:
+            continue
+
+        # Crop the region of interest (ROI) from the original image
+        cropped_roi = original_image[y:y+h, x:x+w]
+
+        # Save the cropped contour as an individual image
+        output_path = f"resources/8-keys/{id}-{i}.png"
+        cv2.imwrite(output_path, cropped_roi)
+
+    print("Cropped contour regions saved as individual images.")
+
+
+for i in range(1,128):
+    find_and_save_contours_batch("resources/new_training/_ ({0}).png".format(i), i)
