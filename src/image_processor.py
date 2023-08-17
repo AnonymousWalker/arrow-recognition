@@ -8,7 +8,7 @@ from src.image_util import is_red
 output_class = ['down', 'left', 'right', 'up']
 output_class_reversed = ['up', 'right', 'left', 'down'] # reversed list of output_class
 template = cv2.imread('resources/head.png')
-model = load_model('trained-model/arrow_orientation_model.h5')
+model = load_model('trained-model/model_v1.h5')
 
 def predict_direction2(input_cv2_image):
     # Preprocess the input image from cv2.imread
