@@ -153,3 +153,4 @@ cython_debug/
 virtualenv/**
 out/
 resources/**
+training-data/**
