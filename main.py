@@ -5,7 +5,6 @@ import mss
 import pywinauto
 from pywinauto import keyboard as pwkeyboard
 import keyboard
-import tensorflow as tf
 from src.keyboard_ctrl import KeyDef, KeyboardCtrl
 from src.key_color import KeyColor
 from src.image_util import *
@@ -13,13 +12,11 @@ from src.image_processor import detect_directions_from_img, get_head_position
 from src.speed import speed_map
 import threading
 import statistics
-
-
-tf.get_logger().setLevel('ERROR')
+import random
 
 head_img = cv2.imread('resources/head.png')
 
-KEY_TYPING_SLEEP = 0.001
+KEY_TYPING_SLEEP = 0.04
 PERFECT_POS_X = 121.0
 AFTER_PERFECT_POS_X = PERFECT_POS_X + 5.0
 ADJUST_SPEED_AMOUNT = 0.25
@@ -29,7 +26,11 @@ class_to_key = {
     'up': KeyDef.VK_UP, 
     'down': KeyDef.VK_DOWN, 
     'left': KeyDef.VK_LEFT, 
-    'right': KeyDef.VK_RIGHT
+    'right': KeyDef.VK_RIGHT,
+    'up-left': KeyDef.VK_NUMPAD7,
+    'up-right': KeyDef.VK_NUMPAD9,
+    'down-left': KeyDef.VK_NUMPAD1,
+    'down-right': KeyDef.VK_NUMPAD3
 }
 
 # area: (left, top, width, height)
@@ -69,6 +70,7 @@ def send_key_input(window, arrows):
         key = class_to_key[arr]
 
         KeyboardCtrl.press_and_release(key)
+        time.sleep(KEY_TYPING_SLEEP)
 
 
 # Register the trigger function to the desired key press event
@@ -148,7 +150,7 @@ def watch_beginning(window, beginning_area, track_area):
             time.sleep(0.3) # waits till the head leaves the front
 
 # main
-pid = 15168
+pid = 7688
 app = pywinauto.Application().connect(process=pid)
 window = app["Audition"]
 print('original speed: {0}'.format(speed))
@@ -160,7 +162,7 @@ perfect_thread.daemon = True  # Set the thread as a daemon so it exits when the 
 perfect_thread.start()
 
 keyboard.hook(callback=lambda e: key_listener(e, window))
-keyboard.wait('esc')  # Wait for the 'esc' key to exit
+keyboard.wait('0')  # Wait for the 'esc' key to exit
 keyboard.unhook_all()
 
 # image = cv2.imread('resources/rev1.png')
