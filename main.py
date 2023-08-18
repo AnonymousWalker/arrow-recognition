@@ -18,7 +18,6 @@ head_img = cv2.imread('resources/head.png')
 
 KEY_TYPING_SLEEP = 0.04
 PERFECT_POS_X = 121.0
-AFTER_PERFECT_POS_X = PERFECT_POS_X + 5.0
 ADJUST_SPEED_AMOUNT = 0.25
 speed = speed_map[103]
 
@@ -70,7 +69,9 @@ def process_arrows(window, lock=None):
 def send_key_input(window, arrows):
     window.set_focus()
     time.sleep(KEY_TYPING_SLEEP)
-    print(arrows)
+    if len(arrows) > 0:
+        print(arrows)
+        
     for arr in arrows:
         key = class_to_key[arr]
 
