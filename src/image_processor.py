@@ -2,16 +2,17 @@ import cv2
 import numpy as np
 from PIL import Image
 import tensorflow as tf
+import logging
 from tensorflow.keras.models import load_model
 import imutils
 from src.image_util import is_red
 
-tf.get_logger().setLevel('ERROR')
 
 output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right'] # 8K
 output_class_reversed = ['down', 'up', 'right', 'left', 'down-right', 'down-left', 'up-right', 'up-left'] # 8K
 
 template = cv2.imread('resources/head.png')
+tf.get_logger().setLevel(logging.ERROR)
 model = load_model('trained-model/model_v2-8k.h5')
 
 def predict_direction2(input_cv2_image):

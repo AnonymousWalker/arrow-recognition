@@ -50,14 +50,19 @@ def capture_screenshot_app_window(window, area):
         
         return screenshot_bgr
 
-def process_arrows(window):    
+def process_arrows(window, lock=None):    
     area = (280, 540, 470, 40) # (left, top, width, height)
 
     captured_image = capture_screenshot_app_window(window, area)
 
     dirs = detect_directions_from_img(captured_image)
 
-    send_key_input(window, dirs)
+    if lock == None:
+        send_key_input(window, dirs)
+        return
+    
+    with lock:
+        send_key_input(window, dirs)
 
     # cv2.imwrite('out/captured{0}.png'.format(time.time()), captured_image)
 
@@ -119,25 +124,21 @@ def watch_to_hit_perfect(window, head_img, track_area):
         remaining_time = (PERFECT_POS_X - head_X) / speed # distance / speed
         time.sleep(remaining_time) # waits until perfect
         KeyboardCtrl.press_and_release(KeyDef.VK_CONTROL)
-        time.sleep(KEY_TYPING_SLEEP)
         print("Ctrl hit!")
+        time.sleep(KEY_TYPING_SLEEP)
     except ValueError:
         # print("value error for sleep()")
         None
 
-
-def track_thread(window, track_area):
-    _thread = threading.Thread(target=lambda: watch_to_hit_perfect(window, head_img, track_area))
-    _thread.start()
-
-
-def arrows_thread(window):
-    time_to_process_arrows = AFTER_PERFECT_POS_X / speed
-    _thread = threading.Timer(time_to_process_arrows, lambda: process_arrows(window))
-    _thread.start()
+def arrows_thread(window, track_area):
+    lock = threading.Lock()
+    while True:
+        wait_keys_appear(window, track_area)
+        time.sleep(0.2)
+        process_arrows(window, lock)
     
 
-def watch_beginning(window, beginning_area, track_area):
+def start_perfect_watcher(window, beginning_area, track_area):
     # fps_sleep = 1.0/60
     window.set_focus()
 
@@ -145,21 +146,34 @@ def watch_beginning(window, beginning_area, track_area):
         captured = capture_screenshot_app_window(window, beginning_area)
         if count_red_pixels(captured) >= 3:
             # head is at the beginning
-            track_thread(window, track_area)
-            arrows_thread(window)
-            time.sleep(0.3) # waits till the head leaves the front
+            # perfect_thread(window, track_area)
+            time.sleep(0.2)
+            watch_to_hit_perfect(window, head_img, track_area)
+
+def wait_keys_appear(window, track_area):
+    while True:
+        track, _ = capture_screenshot_with_time(window, track_area)
+        headX, _ = get_head_position(head_img, track)
+
+        if (headX > PERFECT_POS_X):
+            return
+
 
 # main
-pid = 7688
+pid = 20068
 app = pywinauto.Application().connect(process=pid)
 window = app["Audition"]
 print('original speed: {0}'.format(speed))
 
 track_area = (515, 515, 170, 15)
 beginning_area = (520,515,8,15)
-perfect_thread = threading.Thread(target=lambda: watch_beginning(window, beginning_area, track_area))
-perfect_thread.daemon = True  # Set the thread as a daemon so it exits when the main thread exits
-perfect_thread.start()
+per_thread = threading.Thread(target=lambda: start_perfect_watcher(window, beginning_area, track_area))
+per_thread.daemon = True  # Set the thread as a daemon so it exits when the main thread exits
+per_thread.start()
+
+arr_thread = threading.Thread(target=lambda: arrows_thread(window, track_area))
+arr_thread.daemon = True
+arr_thread.start()
 
 keyboard.hook(callback=lambda e: key_listener(e, window))
 keyboard.wait('0')  # Wait for the 'esc' key to exit
