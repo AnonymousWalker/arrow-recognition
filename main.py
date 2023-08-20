@@ -1,3 +1,4 @@
+import sys
 import cv2
 import time
 import numpy as np
@@ -10,6 +11,7 @@ from src.key_color import KeyColor
 from src.image_util import *
 from src.image_processor import detect_directions_from_img, get_head_position
 from src.speed import speed_map
+from src.util import get_pid_by_name
 import threading
 import statistics
 import random
@@ -17,9 +19,11 @@ import random
 head_img = cv2.imread('resources/head.png')
 
 KEY_TYPING_SLEEP = 0.04
-PERFECT_POS_X = 121.0
+PERFECT_POS_X = 120.0
 ADJUST_SPEED_AMOUNT = 0.25
 speed = speed_map[103]
+
+debug_img = None
 
 class_to_key = { 
     'up': KeyDef.VK_UP, 
@@ -53,6 +57,8 @@ def process_arrows(window, lock=None):
     area = (280, 540, 470, 40) # (left, top, width, height)
 
     captured_image = capture_screenshot_app_window(window, area)
+    global debug_img
+    debug_img = captured_image
 
     dirs = detect_directions_from_img(captured_image)
 
@@ -86,9 +92,10 @@ def key_listener(e, window):
     if e.event_type == keyboard.KEY_DOWN:
         if e.name == 'enter':
             process_arrows(window)
-        if e.name == 'p': # capture screenshot
-            captured = capture_screenshot_app_window(window, area=(520,515,8,15))
-            cv2.imwrite('out/captured{0}.png'.format(time.time()), captured)
+        if e.name == 'insert': # capture screenshot
+            print('capturing screenshot...')
+            # captured = capture_screenshot_app_window(window, area=(280, 540, 470, 40))
+            cv2.imwrite('out/captured{0}.png'.format(time.time()), debug_img)
         if e.name == 'page up':
             speed += ADJUST_SPEED_AMOUNT
             print('------ speed: {}'.format(speed))
@@ -132,12 +139,15 @@ def watch_to_hit_perfect(window, head_img, track_area):
         None
 
 def arrows_thread(window, track_area):
-    lock = threading.Lock()
-    while True:
-        wait_keys_appear(window, track_area)
-        time.sleep(0.2)
-        process_arrows(window, lock)
-    
+    try:
+        lock = threading.Lock()
+        while True:
+            wait_keys_appear(window, track_area)
+            time.sleep(0.2)
+            process_arrows(window, lock)
+    except:
+        print("Error! Shutting down...")
+        sys.exit(1)    
 
 def start_perfect_watcher(window, beginning_area, track_area):
     # fps_sleep = 1.0/60
@@ -161,7 +171,7 @@ def wait_keys_appear(window, track_area):
 
 
 # main
-pid = 20068
+pid = get_pid_by_name("Audition.exe")
 app = pywinauto.Application().connect(process=pid)
 window = app["Audition"]
 print('original speed: {0}'.format(speed))
@@ -177,11 +187,5 @@ arr_thread.daemon = True
 arr_thread.start()
 
 keyboard.hook(callback=lambda e: key_listener(e, window))
-keyboard.wait('0')  # Wait for the 'esc' key to exit
+keyboard.wait('esc')  # Wait for the 'esc' key to exit
 keyboard.unhook_all()
-
-# image = cv2.imread('resources/rev1.png')
-# d = detect_directions_from_img(image)
-# print(d)
-
-

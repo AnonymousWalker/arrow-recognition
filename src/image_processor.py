@@ -6,20 +6,20 @@ import logging
 from tensorflow.keras.models import load_model
 import imutils
 from src.image_util import is_red
-
+import time
 
 output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right'] # 8K
 output_class_reversed = ['down', 'up', 'right', 'left', 'down-right', 'down-left', 'up-right', 'up-left'] # 8K
 
 template = cv2.imread('resources/head.png')
 tf.get_logger().setLevel(logging.ERROR)
-model = load_model('trained-model/model_v2-8k.h5')
+model = load_model('trained-model/new_8k_rgb.h5')
 
 def predict_direction2(input_cv2_image):
     # Preprocess the input image from cv2.imread
     target_size = (28, 28)  # Make sure it matches the size your model expects
 
-    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_RGB2GRAY)
+    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2RGB)
 
     # Resize and preprocess the image
     pil_image = Image.fromarray(input_image_converted)
@@ -65,6 +65,7 @@ def detect_directions_from_img(image):
             continue
 
         contour_region = image[y:y+h, x:x+w]
+        # cv2.imwrite("contour_predict{0}".format(time.time()), contour_region)
         predicted_class_id = predict_direction2(contour_region)
 
         # determine if the direction is reversed (red key)
