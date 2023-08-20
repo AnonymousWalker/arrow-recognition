@@ -48,6 +48,19 @@ def count_red_pixels(image):
     
     return red_pixel_count
 
+def count_gray_pixels(image):
+    gray_pixels = 0
+    height, width, _ = image.shape
+    tolerance = 10
+    
+    for y in range(height):
+        for x in range(width):
+            b, g, r = image[y, x]
+            if abs(r - g) <= tolerance and abs(g - b) <= tolerance:
+                gray_pixels += 1
+                
+    return gray_pixels
+
 def capture_screenshot_with_time(window, area):
     window_rect = window.rectangle()
     screenshot_area = {

@@ -54,7 +54,8 @@ def capture_screenshot_app_window(window, area):
         return screenshot_bgr
 
 def process_arrows(window, lock=None):    
-    area = (280, 540, 470, 40) # (left, top, width, height)
+    # area = (280, 540, 470, 40) # (left, top, width, height)
+    area = (150, 540, 720, 40) # group couple dance with gray keys - extra-wide
 
     captured_image = capture_screenshot_app_window(window, area)
     global debug_img
@@ -174,6 +175,7 @@ def wait_keys_appear(window, track_area):
 pid = get_pid_by_name("Audition.exe")
 app = pywinauto.Application().connect(process=pid)
 window = app["Audition"]
+time.sleep(2)
 print('original speed: {0}'.format(speed))
 
 track_area = (515, 515, 170, 15)
@@ -187,5 +189,5 @@ arr_thread.daemon = True
 arr_thread.start()
 
 keyboard.hook(callback=lambda e: key_listener(e, window))
-keyboard.wait('esc')  # Wait for the 'esc' key to exit
+keyboard.wait('`')  # Wait for the 'esc' key to exit
 keyboard.unhook_all()

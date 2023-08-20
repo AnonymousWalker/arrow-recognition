@@ -5,7 +5,7 @@ import tensorflow as tf
 import logging
 from tensorflow.keras.models import load_model
 import imutils
-from src.image_util import is_red
+from src.image_util import is_red, count_gray_pixels
 import time
 
 output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right'] # 8K
@@ -65,6 +65,9 @@ def detect_directions_from_img(image):
             continue
 
         contour_region = image[y:y+h, x:x+w]
+        if count_gray_pixels(contour_region) >= 700: # gray-color arrow
+            continue
+        
         # cv2.imwrite("contour_predict{0}".format(time.time()), contour_region)
         predicted_class_id = predict_direction2(contour_region)
 
