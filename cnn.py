@@ -47,4 +47,4 @@ validation_generator = train_datagen.flow_from_directory(
 model.fit(train_generator, validation_data=validation_generator, epochs=10)
 
 # Save the trained model
-model.save('trained-model/new_8k_rgb.h5')
+model.save('trained-model/8k_rgb_v2.h5')

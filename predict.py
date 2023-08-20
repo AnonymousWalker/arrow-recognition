@@ -14,16 +14,14 @@ import cv2
 output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right'] # 8K
 
 # Load the trained model
-model = load_model('trained-model/model_v2-8k.h5')  # Replace with the path to your trained model
 
-def predict_direction(input_file):
+def predict_direction_1(input_cv2_image):
+    model = load_model('trained-model/model_v1.h5')  # Replace with the path to your trained model
 
-    # Load and preprocess the input image
-    input_image_path = input_file
     target_size = (28, 28)  # Make sure it matches the size your model expects
 
     # Open the image using PIL
-    image = Image.open(input_image_path)
+    image = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2RGB)
 
     # Resize and preprocess the image
     image = image.resize(target_size)
@@ -36,8 +34,8 @@ def predict_direction(input_file):
     # Interpret the predictions
     predicted_class = np.argmax(predictions)  # Get the index of the highest probability class
     # Here, you might need a class mapping to convert index to class label
-
-    print("Predicted class:", output_class[predicted_class])
+    _output_class = ['down', 'left', 'right', 'up']
+    print("Predicted class:", _output_class[predicted_class])
 
 # for i in range(0, 8):
 #     predict_direction('out/cropped_contour_{0}.png'.format(i))
@@ -45,11 +43,12 @@ def predict_direction(input_file):
 
 
 def predict_direction2(input_cv2_image):
+    model = load_model('trained-model/8k_rgb_v2.h5')  # Replace with the path to your trained model
 
     # Preprocess the input image from cv2.imread
     target_size = (28, 28)  # Make sure it matches the size your model expects
 
-    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_RGB2GRAY)
+    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2RGB)
 
     # Resize and preprocess the image
     pil_image = Image.fromarray(input_image_converted)
@@ -68,17 +67,19 @@ def predict_direction2(input_cv2_image):
 
 
 
-res = []
-for i in range(1, 18):
-    input_image_path = "resources/manual-testing/_ ({0}).png".format(i)
-    input_cv2_image = cv2.imread(input_image_path)
+# res = []
+# for i in range(1, 18):
+#     input_image_path = "resources/manual-testing/_ ({0}).png".format(i)
+#     input_cv2_image = cv2.imread(input_image_path)
 
-    # Use the modified function to make predictions
-    d = predict_direction2(input_cv2_image)
-    res.append(d)
+#     # Use the modified function to make predictions
+#     d = predict_direction2(input_cv2_image)
+#     res.append(d)
 
-print(res)
-# input_image_path = 'resources/3.png'
-# input_cv2_image = cv2.imread(input_image_path)
-# d = predict_direction2(input_cv2_image)
-# print(d)
+# print(res)
+
+
+input_image_path = 'out/bug-up-4.png'
+input_cv2_image = cv2.imread(input_image_path)
+d = predict_direction2(input_cv2_image)
+print(d)
