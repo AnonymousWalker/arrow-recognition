@@ -19,7 +19,7 @@ import random
 head_img = cv2.imread('resources/head.png')
 
 KEY_TYPING_SLEEP = 0.04
-PERFECT_POS_X = 120.0
+PERFECT_POS_X = 121.0
 ADJUST_SPEED_AMOUNT = 0.25
 speed = speed_map[103]
 
