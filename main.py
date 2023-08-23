@@ -152,7 +152,7 @@ def arrows_thread(window, track_area):
             if (paused): 
                 continue
             wait_keys_appear(window, track_area)
-            time.sleep(0.2)
+            time.sleep(0.02)
             process_arrows(window, lock)
     except:
         print("Error! Shutting down...")

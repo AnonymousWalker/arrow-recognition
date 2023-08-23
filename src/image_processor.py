@@ -30,7 +30,7 @@ def predict_direction2(input_cv2_image):
     # Make predictions
     predictions = model.predict(image)
 
-    if np.max(predictions) < 0.9:
+    if np.max(predictions) < 0.8:
         return len(output_class) - 1    # 'unknown'
 
     # Interpret the predictions
