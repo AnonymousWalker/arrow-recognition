@@ -31,6 +31,7 @@ class KeyDef:
   VK_F5 = 0x74
   VK_F6 = 0x75
   VK_F7 = 0x76
+  VK_F13 = 0x7C
 
   VK_LEFT = 0x25
   VK_UP = 0x26

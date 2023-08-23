@@ -11,7 +11,7 @@ import cv2
 # }
 # output_class = ['down', 'left', 'right', 'up']
 # output_class = ['up', 'down', 'left', 'right']
-output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right'] # 8K
+output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right', 'unknown']
 
 # Load the trained model
 
@@ -43,7 +43,7 @@ def predict_direction_1(input_cv2_image):
 
 
 def predict_direction2(input_cv2_image):
-    model = load_model('trained-model/8k_rgb_v2.h5')  # Replace with the path to your trained model
+    model = load_model('trained-model/8k_rgb_v2.1.h5')  # Replace with the path to your trained model
 
     # Preprocess the input image from cv2.imread
     target_size = (28, 28)  # Make sure it matches the size your model expects
@@ -60,6 +60,10 @@ def predict_direction2(input_cv2_image):
     predictions = model.predict(image)
 
     # Interpret the predictions
+    print(np.max(predictions))
+    if np.max(predictions) < 0.8:
+        return 'unknown'
+    
     predicted_class = np.argmax(predictions)  # Get the index of the highest probability class
     # Here, you might need a class mapping to convert index to class label
 
@@ -79,7 +83,7 @@ def predict_direction2(input_cv2_image):
 # print(res)
 
 
-input_image_path = 'out/bug-up-4.png'
+input_image_path = 'out/cropped_contour_8.png'
 input_cv2_image = cv2.imread(input_image_path)
 d = predict_direction2(input_cv2_image)
 print(d)

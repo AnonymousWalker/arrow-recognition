@@ -3,7 +3,7 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 
-class_labels = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right'] # 8K
+class_labels = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right', 'unknown']
 # class_labels = ['up', 'down', 'left', 'right']
 
 # Define the CNN model
@@ -14,7 +14,7 @@ model = models.Sequential([
     layers.MaxPooling2D((2, 2)),
     layers.Flatten(),
     layers.Dense(128, activation='relu'),
-    layers.Dense(8, activation='softmax')  # number of classes
+    layers.Dense(len(class_labels), activation='softmax')  # number of classes
 ])
 
 # Compile the model
@@ -47,4 +47,4 @@ validation_generator = train_datagen.flow_from_directory(
 model.fit(train_generator, validation_data=validation_generator, epochs=10)
 
 # Save the trained model
-model.save('trained-model/8k_rgb_v2.h5')
+model.save('trained-model/8k_rgb_v2.1.h5')

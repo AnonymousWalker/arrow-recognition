@@ -8,12 +8,12 @@ import imutils
 from src.image_util import is_red, count_gray_pixels
 import time
 
-output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right'] # 8K
-output_class_reversed = ['down', 'up', 'right', 'left', 'down-right', 'down-left', 'up-right', 'up-left'] # 8K
+output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right', 'unknown'] # 8K
+output_class_reversed = ['down', 'up', 'right', 'left', 'down-right', 'down-left', 'up-right', 'up-left', 'unknown'] # 8K
 
 template = cv2.imread('resources/head.png')
 tf.get_logger().setLevel(logging.ERROR)
-model = load_model('trained-model/8k_rgb_v2.h5')
+model = load_model('trained-model/8k_rgb_v2.1.h5')
 
 def predict_direction2(input_cv2_image):
     # Preprocess the input image from cv2.imread
@@ -29,6 +29,9 @@ def predict_direction2(input_cv2_image):
 
     # Make predictions
     predictions = model.predict(image)
+
+    if np.max(predictions) < 0.9:
+        return len(output_class) - 1    # 'unknown'
 
     # Interpret the predictions
     predicted_class = np.argmax(predictions)  # Get the index of the highest probability class
