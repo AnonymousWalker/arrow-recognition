@@ -13,7 +13,7 @@ output_class_reversed = ['down', 'up', 'right', 'left', 'down-right', 'down-left
 
 template = cv2.imread('resources/head.png')
 tf.get_logger().setLevel(logging.ERROR)
-model = load_model('trained-model/8k_rgb_v2.1.h5')
+model = load_model('trained-model/8k_rgb_v2.h5')
 
 def predict_direction2(input_cv2_image):
     # Preprocess the input image from cv2.imread

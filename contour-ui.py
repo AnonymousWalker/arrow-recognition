@@ -22,7 +22,7 @@ def find_contours(image_path):
 
 if __name__ == "__main__":
     # Provide the path to your image file
-    image_path = "resources/rev1.png"
+    image_path = "resources/bug/b2.png"
     # image_path = "resources/s1.png"
 
     # Find contours in the image

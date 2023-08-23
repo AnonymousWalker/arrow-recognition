@@ -152,7 +152,7 @@ def arrows_thread(window, track_area):
             if (paused): 
                 continue
             wait_keys_appear(window, track_area)
-            time.sleep(0.02)
+            time.sleep(0.05)
             process_arrows(window, lock)
     except:
         print("Error! Shutting down...")
@@ -169,7 +169,7 @@ def start_perfect_watcher(window, beginning_area, track_area):
         if count_red_pixels(captured) >= 3:
             # head is at the beginning
             # perfect_thread(window, track_area)
-            time.sleep(0.2)
+            time.sleep(0.05)
             watch_to_hit_perfect(window, head_img, track_area)
 
 def wait_keys_appear(window, track_area):

@@ -43,7 +43,7 @@ def predict_direction_1(input_cv2_image):
 
 
 def predict_direction2(input_cv2_image):
-    model = load_model('trained-model/8k_rgb_v2.1.h5')  # Replace with the path to your trained model
+    model = load_model('trained-model/8k_rgb_v2.h5')  # Replace with the path to your trained model
 
     # Preprocess the input image from cv2.imread
     target_size = (28, 28)  # Make sure it matches the size your model expects
@@ -83,7 +83,7 @@ def predict_direction2(input_cv2_image):
 # print(res)
 
 
-input_image_path = 'out/cropped_contour_8.png'
+input_image_path = 'resources/bug/up.png'
 input_cv2_image = cv2.imread(input_image_path)
 d = predict_direction2(input_cv2_image)
 print(d)

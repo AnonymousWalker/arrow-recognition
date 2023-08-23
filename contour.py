@@ -23,7 +23,7 @@ def find_contours(image_path):
 
 def find_and_save_contours():
     # Provide the path to your image file
-    image_path = "resources/rev1.png"
+    image_path = "resources/bug/b2.png"
 
     # Find contours in the image
     contours = find_contours(image_path)
@@ -79,5 +79,7 @@ def find_and_save_contours_batch(image_path, id):
     print("Cropped contour regions saved as individual images.")
 
 
-for i in range(1,128):
-    find_and_save_contours_batch("resources/new_training/_ ({0}).png".format(i), i)
+find_and_save_contours()
+
+# for i in range(1,128):
+#     find_and_save_contours_batch("resources/new_training/_ ({0}).png".format(i), i)
