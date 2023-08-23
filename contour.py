@@ -13,7 +13,7 @@ def find_contours(image_path):
     blurred_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
 
     # Apply binary thresholding to create a binary image
-    _, threshold_image = cv2.threshold(blurred_image, 150, 255, cv2.THRESH_BINARY)
+    _, threshold_image = cv2.threshold(blurred_image, 130, 255, cv2.THRESH_BINARY)
 
     # Find contours in the binary image
     cnts = cv2.findContours(threshold_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
@@ -23,7 +23,7 @@ def find_contours(image_path):
 
 def find_and_save_contours():
     # Provide the path to your image file
-    image_path = "resources/bug/b2.png"
+    image_path = "resources/bug/7.png"
 
     # Find contours in the image
     contours = find_contours(image_path)

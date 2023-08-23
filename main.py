@@ -22,7 +22,6 @@ KEY_TYPING_SLEEP = 0.04
 PERFECT_POS_X = 121.0
 ADJUST_SPEED_AMOUNT = 0.25
 speed = speed_map[130]
-paused = False
 
 debug_img = None
 
@@ -35,7 +34,7 @@ class_to_key = {
     'up-right': KeyDef.VK_NUMPAD9,
     'down-left': KeyDef.VK_NUMPAD1,
     'down-right': KeyDef.VK_NUMPAD3,
-    'unknown': KeyDef.VK_F13
+    'unknown': KeyDef.VK_END
 }
 
 # area: (left, top, width, height)
@@ -56,8 +55,8 @@ def capture_screenshot_app_window(window, area):
         return screenshot_bgr
 
 def process_arrows(window, lock=None):    
-    # area = (280, 540, 470, 40) # (left, top, width, height)
-    area = (150, 540, 720, 40) # extra-wide
+    area = (280, 540, 470, 40) # (left, top, width, height)
+    # area = (150, 540, 720, 40) # extra-wide
 
     captured_image = capture_screenshot_app_window(window, area)
     global debug_img
@@ -93,10 +92,6 @@ def key_listener(e, window):
     global speed
 
     if e.event_type == keyboard.KEY_DOWN:
-        if e.name == 'pause':
-            global paused
-            paused = not(paused)
-            print(f"____ RUNNING:{paused} ____")
         if e.name == 'enter':
             process_arrows(window)
         if e.name == 'insert': # capture screenshot
@@ -145,14 +140,11 @@ def watch_to_hit_perfect(window, head_img, track_area):
         None
 
 def arrows_thread(window, track_area):
-    global paused
     try:
         lock = threading.Lock()
         while True:
-            if (paused): 
-                continue
             wait_keys_appear(window, track_area)
-            time.sleep(0.05)
+            time.sleep(0.1)
             process_arrows(window, lock)
     except:
         print("Error! Shutting down...")
@@ -160,11 +152,8 @@ def arrows_thread(window, track_area):
 
 def start_perfect_watcher(window, beginning_area, track_area):
     window.set_focus()
-    global paused
 
     while True:
-        if (paused): 
-            continue
         captured = capture_screenshot_app_window(window, beginning_area)
         if count_red_pixels(captured) >= 3:
             # head is at the beginning

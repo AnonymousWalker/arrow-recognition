@@ -30,7 +30,7 @@ def predict_direction2(input_cv2_image):
     # Make predictions
     predictions = model.predict(image)
 
-    if np.max(predictions) < 0.8:
+    if np.max(predictions) < 0.85:
         return len(output_class) - 1    # 'unknown'
 
     # Interpret the predictions
@@ -48,7 +48,7 @@ def detect_directions_from_img(image):
     blurred_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
 
     # Apply binary thresholding to create a binary image
-    _, threshold_image = cv2.threshold(blurred_image, 150, 255, cv2.THRESH_BINARY)
+    _, threshold_image = cv2.threshold(blurred_image, 130, 255, cv2.THRESH_BINARY)
 
     # Find contours in the binary image
     cnts = cv2.findContours(threshold_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
