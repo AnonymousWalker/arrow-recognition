@@ -18,8 +18,8 @@ import random
 
 head_img = cv2.imread('resources/head.png')
 
-KEY_TYPING_SLEEP = 0.04
-PERFECT_POS_X = 121.0
+KEY_TYPING_SLEEP = 0.05
+PERFECT_POS_X = 120.0
 ADJUST_SPEED_AMOUNT = 0.25
 speed = speed_map[130]
 
@@ -55,8 +55,8 @@ def capture_screenshot_app_window(window, area):
         return screenshot_bgr
 
 def process_arrows(window, lock=None):    
-    area = (280, 540, 470, 40) # (left, top, width, height)
-    # area = (150, 540, 720, 40) # extra-wide
+    # area = (280, 540, 470, 40) # (left, top, width, height)
+    area = (150, 540, 720, 40) # extra-wide
 
     captured_image = capture_screenshot_app_window(window, area)
     global debug_img
@@ -76,9 +76,8 @@ def process_arrows(window, lock=None):
 
 def send_key_input(window, arrows):
     window.set_focus()
-    time.sleep(KEY_TYPING_SLEEP)
-    if len(arrows) > 0:
-        print(arrows)
+    # time.sleep(KEY_TYPING_SLEEP)
+    print(arrows)
         
     for arr in arrows:
         key = class_to_key[arr]
@@ -92,7 +91,7 @@ def key_listener(e, window):
     global speed
 
     if e.event_type == keyboard.KEY_DOWN:
-        if e.name == 'enter':
+        if e.name == 'pause':
             process_arrows(window)
         if e.name == 'insert': # capture screenshot
             print('capturing screenshot...')
@@ -140,11 +139,11 @@ def watch_to_hit_perfect(window, head_img, track_area):
         None
 
 def arrows_thread(window, track_area):
+    lock = threading.Lock()
     try:
-        lock = threading.Lock()
         while True:
             wait_keys_appear(window, track_area)
-            time.sleep(0.1)
+            time.sleep(0.02)
             process_arrows(window, lock)
     except:
         print("Error! Shutting down...")
@@ -158,7 +157,7 @@ def start_perfect_watcher(window, beginning_area, track_area):
         if count_red_pixels(captured) >= 3:
             # head is at the beginning
             # perfect_thread(window, track_area)
-            time.sleep(0.05)
+            time.sleep(0.03)
             watch_to_hit_perfect(window, head_img, track_area)
 
 def wait_keys_appear(window, track_area):
