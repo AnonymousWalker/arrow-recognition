@@ -18,7 +18,7 @@ import random
 
 head_img = cv2.imread('resources/head.png')
 
-KEY_TYPING_SLEEP = 0.04
+KEY_TYPING_SLEEP = 0.05
 PERFECT_POS_X = 120.0
 ADJUST_SPEED_AMOUNT = 0.25
 speed = speed_map[130]
@@ -143,7 +143,7 @@ def arrows_thread(window, track_area):
     try:
         while True:
             wait_keys_appear(window, track_area)
-            time.sleep(0.05)
+            time.sleep(0.02)
             process_arrows(window, lock)
     except:
         print("Error! Shutting down...")
@@ -157,7 +157,7 @@ def start_perfect_watcher(window, beginning_area, track_area):
         if count_red_pixels(captured) >= 3:
             # head is at the beginning
             # perfect_thread(window, track_area)
-            time.sleep(0.02)
+            time.sleep(0.03)
             watch_to_hit_perfect(window, head_img, track_area)
 
 def wait_keys_appear(window, track_area):
