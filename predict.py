@@ -1,14 +1,10 @@
 import numpy as np
 from PIL import Image
+import tensorflow as tf
+import logging
 from tensorflow.keras.models import load_model
 import cv2
 
-# arrow_directions = {
-#     'up': 3,
-#     'down': 0,
-#     'left': 1,
-#     'right': 2
-# }
 # output_class = ['down', 'left', 'right', 'up']
 # output_class = ['up', 'down', 'left', 'right']
 output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right', 'unknown']
@@ -29,7 +25,7 @@ def predict_direction_1(input_cv2_image):
     image = np.expand_dims(image, axis=0)  # Add batch dimension
 
     # Make predictions
-    predictions = model.predict(image)
+    predictions = model.predict(image, verbose=None)
 
     # Interpret the predictions
     predicted_class = np.argmax(predictions)  # Get the index of the highest probability class
@@ -43,12 +39,12 @@ def predict_direction_1(input_cv2_image):
 
 
 def predict_direction2(input_cv2_image):
-    model = load_model('trained-model/8k_rgb_v2.h5')  # Replace with the path to your trained model
+    tf.get_logger().setLevel(logging.ERROR)
+    model = load_model('trained-model/v2.0-gray.h5')  # Replace with the path to your trained model
 
-    # Preprocess the input image from cv2.imread
     target_size = (28, 28)  # Make sure it matches the size your model expects
 
-    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2RGB)
+    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2GRAY)
 
     # Resize and preprocess the image
     pil_image = Image.fromarray(input_image_converted)
@@ -57,7 +53,7 @@ def predict_direction2(input_cv2_image):
     image = np.expand_dims(image, axis=0)  # Add batch dimension
 
     # Make predictions
-    predictions = model.predict(image)
+    predictions = model.predict(image, verbose=None)
 
     # Interpret the predictions
     print(np.max(predictions))
@@ -65,7 +61,6 @@ def predict_direction2(input_cv2_image):
         return 'unknown'
     
     predicted_class = np.argmax(predictions)  # Get the index of the highest probability class
-    # Here, you might need a class mapping to convert index to class label
 
     return output_class[predicted_class]
 
@@ -83,7 +78,7 @@ def predict_direction2(input_cv2_image):
 # print(res)
 
 
-input_image_path = 'resources/bug/up.png'
+input_image_path = 'resources/bug/unknown.png'
 input_cv2_image = cv2.imread(input_image_path)
 d = predict_direction2(input_cv2_image)
 print(d)
