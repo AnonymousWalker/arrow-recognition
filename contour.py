@@ -21,9 +21,10 @@ def find_contours(image_path):
 
     return sorted(cnts, key=lambda c: cv2.boundingRect(c)[0])
 
-def find_and_save_contours():
+
+def find_and_save_contours(image_path):
     # Provide the path to your image file
-    image_path = "resources/bug/7.png"
+    
 
     # Find contours in the image
     contours = find_contours(image_path)
@@ -73,13 +74,13 @@ def find_and_save_contours_batch(image_path, id):
         cropped_roi = original_image[y:y+h, x:x+w]
 
         # Save the cropped contour as an individual image
-        output_path = f"resources/8-keys/{id}-{i}.png"
+        output_path = f"out/contours/{id}-{i}.png"
         cv2.imwrite(output_path, cropped_roi)
 
     print("Cropped contour regions saved as individual images.")
 
 
-find_and_save_contours()
+find_and_save_contours("resources/bug/fade3.png")
 
-# for i in range(1,128):
-#     find_and_save_contours_batch("resources/new_training/_ ({0}).png".format(i), i)
+# for i in range(1,51):
+#     find_and_save_contours_batch("out/screenshot/_ ({0}).png".format(i), i)

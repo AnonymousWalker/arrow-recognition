@@ -1,10 +1,10 @@
 from PIL import Image
 import os
-# # Path to the input image
-# input_image_path = 'test-data/6.png'  # Replace with your image file path
+# # # Path to the input image
+# input_image_path = 'resources/bug/bug-up-2.png'  # Replace with your image file path
 
 # # Path to save the resized image
-# output_image_path = 'test-data/left/2.png'  # Replace with desired output path
+# output_image_path = 'out/bug-up-2.png'  # Replace with desired output path
 
 # # Open the image using PIL
 # image = Image.open(input_image_path)
@@ -37,8 +37,8 @@ def resize_images(source_folder, target_folder, new_size):
             except Exception as e:
                 print(f"Error processing {filename}: {e}")
 
-source_folder = "resources/8k-split/UP-RIGHT"
-target_folder = "training-data/resized_arrows_8k/up-right"
+source_folder = "out/contours"
+target_folder = "out/contours/resized"
 new_size = (28, 28)
 
 resize_images(source_folder, target_folder, new_size)
