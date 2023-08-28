@@ -20,9 +20,12 @@ head_img = cv2.imread('resources/head.png')
 KEY_TYPING_SLEEP = util.KEY_TYPING_SLEEP
 PERFECT_POS_X = util.PERFECT_POS_X
 ADJUST_SPEED_AMOUNT = util.ADJUST_SPEED_AMOUNT
+PIXELS_TO_PROCESS = 40.0
 arrow_area = (150, 540, 720, 40) # extra-wide
 
-speed = speed_map[188]
+CURRENT_LEVEL = 5
+
+speed = speed_map[130]
 
 debug_img = None
 
@@ -88,7 +91,7 @@ def send_key_input(window, arrows):
 
 # Register the trigger function to the desired key press event
 def key_listener(e, window):
-    global speed
+    global speed, CURRENT_LEVEL
 
     if e.event_type == keyboard.KEY_DOWN:
         if e.name == 'pause':
@@ -103,6 +106,12 @@ def key_listener(e, window):
         if e.name == 'page down':
             speed -= ADJUST_SPEED_AMOUNT
             print('------ speed: {}'.format(speed))
+        if e.name == 'f11':
+            CURRENT_LEVEL += 1
+            print(f"Level: {CURRENT_LEVEL}")
+        if e.name == 'f10': 
+            CURRENT_LEVEL -= 1
+            print(f"Level: {CURRENT_LEVEL}")
         
 def compute_speed(window, head_img, track_area):
     speeds = []
@@ -134,7 +143,6 @@ def watch_to_hit_perfect(window, head_img, track_area):
         time.sleep(remaining_time) # waits until perfect
         KeyboardCtrl.press_and_release(KeyDef.VK_CONTROL)
         print("Ctrl hit!")
-        time.sleep(KEY_TYPING_SLEEP)
     except ValueError:
         None
 
@@ -156,7 +164,7 @@ def start_perfect_watcher(window, beginning_area, track_area):
         if count_red_pixels(captured) >= 3:
             # head is at the beginning
             # perfect_thread(window, track_area)
-            time.sleep(0.03)
+            # time.sleep(0.03)
             watch_to_hit_perfect(window, head_img, track_area)
 
 def wait_keys_appear(window, track_area):
@@ -164,9 +172,12 @@ def wait_keys_appear(window, track_area):
         track, _ = capture_screenshot_with_time(window, track_area)
         headX, _ = get_head_position(head_img, track)
 
-        if (headX >= PERFECT_POS_X):
-            time_to_process = 20.0 / speed # for low level (1-5)
-            time.sleep(time_to_process)
+        if headX >= PERFECT_POS_X:
+            if CURRENT_LEVEL < 6:
+                time_to_process = PIXELS_TO_PROCESS / speed # for low level (1-5)
+                time.sleep(time_to_process)
+            elif speed < 97:
+                time.sleep(0.02)
             return
 
 
