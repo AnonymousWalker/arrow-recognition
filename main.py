@@ -11,17 +11,18 @@ from src.key_color import KeyColor
 from src.image_util import *
 from src.image_processor import detect_directions_from_img, get_head_position
 from src.speed import speed_map
-from src.util import get_pid_by_name
+import src.util as util
 import threading
 import statistics
-import random
 
 head_img = cv2.imread('resources/head.png')
 
-KEY_TYPING_SLEEP = 0.05
-PERFECT_POS_X = 120.0
-ADJUST_SPEED_AMOUNT = 0.25
-speed = speed_map[130]
+KEY_TYPING_SLEEP = util.KEY_TYPING_SLEEP
+PERFECT_POS_X = util.PERFECT_POS_X
+ADJUST_SPEED_AMOUNT = util.ADJUST_SPEED_AMOUNT
+arrow_area = (150, 540, 720, 40) # extra-wide
+
+speed = speed_map[188]
 
 debug_img = None
 
@@ -55,12 +56,11 @@ def capture_screenshot_app_window(window, area):
         return screenshot_bgr
 
 def process_arrows(window, lock=None):    
-    # area = (280, 540, 470, 40) # (left, top, width, height)
-    area = (150, 540, 720, 40) # extra-wide
-
-    captured_image = capture_screenshot_app_window(window, area)
+    # arrow_area = (280, 540, 470, 40) # (left, top, width, height)
+    captured_image = capture_screenshot_app_window(window, arrow_area)
     global debug_img
-    debug_img = captured_image
+    debug_area = (150, 500, 720, 80)
+    debug_img = capture_screenshot_app_window(window, debug_area)
 
     dirs = detect_directions_from_img(captured_image)
 
@@ -93,7 +93,7 @@ def key_listener(e, window):
     if e.event_type == keyboard.KEY_DOWN:
         if e.name == 'pause':
             process_arrows(window)
-        if e.name == 'insert': # capture screenshot
+        if e.name == 'f12': # capture screenshot
             print('capturing screenshot...')
             # captured = capture_screenshot_app_window(window, area=(280, 540, 470, 40))
             cv2.imwrite('out/captured{0}.png'.format(time.time()), debug_img)
@@ -143,7 +143,6 @@ def arrows_thread(window, track_area):
     try:
         while True:
             wait_keys_appear(window, track_area)
-            time.sleep(0.02)
             process_arrows(window, lock)
     except:
         print("Error! Shutting down...")
@@ -165,12 +164,14 @@ def wait_keys_appear(window, track_area):
         track, _ = capture_screenshot_with_time(window, track_area)
         headX, _ = get_head_position(head_img, track)
 
-        if (headX > PERFECT_POS_X):
+        if (headX >= PERFECT_POS_X):
+            time_to_process = 20.0 / speed # for low level (1-5)
+            time.sleep(time_to_process)
             return
 
 
 # main
-pid = get_pid_by_name("Audition.exe")
+pid = util.get_pid_by_name("Audition.exe")
 app = pywinauto.Application().connect(process=pid)
 window = app["Audition"]
 time.sleep(2)

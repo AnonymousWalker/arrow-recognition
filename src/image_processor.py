@@ -6,7 +6,7 @@ import logging
 from tensorflow.keras.models import load_model
 import imutils
 from src.image_util import is_red, count_gray_pixels
-import time
+import src.image_util as image_util
 
 output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right', 'unknown']
 output_class_reversed = ['down', 'up', 'right', 'left', 'down-right', 'down-left', 'up-right', 'up-left', 'unknown']
@@ -17,7 +17,7 @@ model = load_model('trained-model/v2.0-gray.h5')
 def predict_direction2(input_cv2_image):
     target_size = (28, 28)  # Make sure it matches the size your model expects
 
-    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2GRAY)
+    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_RGB2GRAY)
 
     # Resize and preprocess the image
     pil_image = Image.fromarray(input_image_converted)
@@ -36,9 +36,10 @@ def predict_direction2(input_cv2_image):
     return predicted_class
 
 def detect_directions_from_img(image):
+    enhanced_image = image_util.adjust_contrast_brightness(image, contrast_factor=1.3, brightness_factor=1.15)
 
     # Convert the image to grayscale
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray_image = cv2.cvtColor(enhanced_image, cv2.COLOR_RGB2GRAY)
 
     # Apply Gaussian blur to reduce noise
     blurred_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
