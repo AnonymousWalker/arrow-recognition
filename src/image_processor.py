@@ -28,7 +28,7 @@ def predict_direction2(input_cv2_image):
     # Make predictions
     predictions = model.predict(image, verbose=None)
 
-    # if np.max(predictions) < 0.8:
+    # if np.max(predictions) < 0.7:
     #     return len(output_class) - 1    # 'unknown'
 
     predicted_class = np.argmax(predictions)  # Get the index of the highest probability class
@@ -64,7 +64,7 @@ def detect_directions_from_img(image):
         if abs(w - h) > 15 or h < 20 or w < 20:
             continue
 
-        contour_region = image[y:y+h, x:x+w]
+        contour_region = enhanced_image[y:y+h, x:x+w]
         if count_gray_pixels(contour_region) >= 700: # gray-color arrow
             continue
         
@@ -73,7 +73,8 @@ def detect_directions_from_img(image):
         # determine if the direction is reversed (red key)
         predicted_result = output_class_reversed[predicted_class_id] if is_red(contour_region) else output_class[predicted_class_id]
             
-        directions.append(predicted_result)
+        if predicted_result != 'unknown':
+            directions.append(predicted_result)
     
     return directions
 

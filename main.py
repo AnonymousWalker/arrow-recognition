@@ -25,9 +25,10 @@ arrow_area = (150, 540, 720, 40) # extra-wide
 
 CURRENT_LEVEL = 5
 
-speed = speed_map[130]
+speed = speed_map[120]
 
 debug_img = None
+debug_arrows = None
 
 class_to_key = { 
     'up': KeyDef.VK_UP, 
@@ -62,44 +63,39 @@ def process_arrows(window, lock=None):
     # arrow_area = (280, 540, 470, 40) # (left, top, width, height)
     captured_image = capture_screenshot_app_window(window, arrow_area)
     global debug_img
-    debug_area = (150, 500, 720, 80)
-    debug_img = capture_screenshot_app_window(window, debug_area)
+    debug_img = captured_image
+    # debug_img = capture_screenshot_app_window(window, debug_area)
 
     dirs = detect_directions_from_img(captured_image)
 
-    if lock == None:
-        send_key_input(window, dirs)
-        return
-    
-    with lock:
-        send_key_input(window, dirs)
-
-    # cv2.imwrite('out/captured{0}.png'.format(time.time()), captured_image)
-
+    send_key_input(window, dirs)
 
 def send_key_input(window, arrows):
     window.set_focus()
-    # time.sleep(KEY_TYPING_SLEEP)
+    global debug_arrows
+    keys_typed = ""
     print(arrows)
         
     for arr in arrows:
         key = class_to_key[arr]
+        keys_typed += f"{arr}__"
 
         KeyboardCtrl.press_and_release(key)
         time.sleep(KEY_TYPING_SLEEP)
+    
+    debug_arrows = keys_typed
 
 
 # Register the trigger function to the desired key press event
 def key_listener(e, window):
-    global speed, CURRENT_LEVEL
+    global speed, CURRENT_LEVEL, KEY_TYPING_SLEEP
 
     if e.event_type == keyboard.KEY_DOWN:
         if e.name == 'pause':
             process_arrows(window)
         if e.name == 'f12': # capture screenshot
             print('capturing screenshot...')
-            # captured = capture_screenshot_app_window(window, area=(280, 540, 470, 40))
-            cv2.imwrite('out/captured{0}.png'.format(time.time()), debug_img)
+            cv2.imwrite('out/{0}__{1}.png'.format(debug_arrows, time.time()), debug_img)
         if e.name == 'page up':
             speed += ADJUST_SPEED_AMOUNT
             print('------ speed: {}'.format(speed))
@@ -112,6 +108,14 @@ def key_listener(e, window):
         if e.name == 'f10': 
             CURRENT_LEVEL -= 1
             print(f"Level: {CURRENT_LEVEL}")
+        # if e.name == 'f3':
+        #     if KEY_TYPING_SLEEP < 0.05:
+        #         KEY_TYPING_SLEEP += 0.01
+        #         util.log_press_speed(KEY_TYPING_SLEEP)
+        # if e.name == 'f4':
+        #     if KEY_TYPING_SLEEP > 0.0:
+        #         KEY_TYPING_SLEEP -= 0.01
+        #         util.log_press_speed(KEY_TYPING_SLEEP)
         
 def compute_speed(window, head_img, track_area):
     speeds = []
@@ -148,12 +152,14 @@ def watch_to_hit_perfect(window, head_img, track_area):
 
 def arrows_thread(window, track_area):
     lock = threading.Lock()
+    while True:
+        wait_keys_appear(window, track_area)
+        with (lock):
+            process_arrows(window)
     try:
-        while True:
-            wait_keys_appear(window, track_area)
-            process_arrows(window, lock)
+        None
     except:
-        print("Error! Shutting down...")
+        print("Error! Shutting down.`..")
         sys.exit(1)    
 
 def start_perfect_watcher(window, beginning_area, track_area):
@@ -164,7 +170,7 @@ def start_perfect_watcher(window, beginning_area, track_area):
         if count_red_pixels(captured) >= 3:
             # head is at the beginning
             # perfect_thread(window, track_area)
-            # time.sleep(0.03)
+            time.sleep(0.03)
             watch_to_hit_perfect(window, head_img, track_area)
 
 def wait_keys_appear(window, track_area):
@@ -177,7 +183,10 @@ def wait_keys_appear(window, track_area):
                 time_to_process = PIXELS_TO_PROCESS / speed # for low level (1-5)
                 time.sleep(time_to_process)
             elif speed < 97:
-                time.sleep(0.02)
+                time_to_process = PIXELS_TO_PROCESS / speed / 2
+                time.sleep(time_to_process)
+            elif speed < 110:
+                time.sleep(0.01)
             return
 
 

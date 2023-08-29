@@ -107,7 +107,7 @@ user32.SendInput.argtypes = (wintypes.UINT, # nInputs
                              ctypes.c_int)  # cbSize
 
 class KeyboardCtrl:
-  PRESS_SLEEP = 0.001
+  PRESS_SLEEP = 0.01
 
   @staticmethod
   def press_key(hexKeyCode):
