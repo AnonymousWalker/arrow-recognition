@@ -6,7 +6,7 @@ import logging
 from tensorflow.keras.models import load_model
 import imutils
 from src.image_util import is_red, count_gray_pixels
-import time
+import src.image_util as image_util
 
 output_class = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right', 'unknown']
 output_class_reversed = ['down', 'up', 'right', 'left', 'down-right', 'down-left', 'up-right', 'up-left', 'unknown']
@@ -17,7 +17,7 @@ model = load_model('trained-model/v2.0-gray.h5')
 def predict_direction2(input_cv2_image):
     target_size = (28, 28)  # Make sure it matches the size your model expects
 
-    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_BGR2GRAY)
+    input_image_converted = cv2.cvtColor(input_cv2_image, cv2.COLOR_RGB2GRAY)
 
     # Resize and preprocess the image
     pil_image = Image.fromarray(input_image_converted)
@@ -28,7 +28,7 @@ def predict_direction2(input_cv2_image):
     # Make predictions
     predictions = model.predict(image, verbose=None)
 
-    # if np.max(predictions) < 0.8:
+    # if np.max(predictions) < 0.7:
     #     return len(output_class) - 1    # 'unknown'
 
     predicted_class = np.argmax(predictions)  # Get the index of the highest probability class
@@ -36,9 +36,10 @@ def predict_direction2(input_cv2_image):
     return predicted_class
 
 def detect_directions_from_img(image):
+    enhanced_image = image_util.adjust_contrast_brightness(image, contrast_factor=1.3, brightness_factor=1.15)
 
     # Convert the image to grayscale
-    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray_image = cv2.cvtColor(enhanced_image, cv2.COLOR_RGB2GRAY)
 
     # Apply Gaussian blur to reduce noise
     blurred_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
@@ -63,7 +64,7 @@ def detect_directions_from_img(image):
         if abs(w - h) > 15 or h < 20 or w < 20:
             continue
 
-        contour_region = image[y:y+h, x:x+w]
+        contour_region = enhanced_image[y:y+h, x:x+w]
         if count_gray_pixels(contour_region) >= 700: # gray-color arrow
             continue
         
@@ -72,7 +73,8 @@ def detect_directions_from_img(image):
         # determine if the direction is reversed (red key)
         predicted_result = output_class_reversed[predicted_class_id] if is_red(contour_region) else output_class[predicted_class_id]
             
-        directions.append(predicted_result)
+        if predicted_result != 'unknown':
+            directions.append(predicted_result)
     
     return directions
 

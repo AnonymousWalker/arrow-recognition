@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import mss
 import time
+from PIL import Image, ImageEnhance
 
 def is_red(image):
     # Split the image into color channels
@@ -76,3 +77,19 @@ def capture_screenshot_with_time(window, area):
         screenshot_bgr = cv2.cvtColor(screenshot_np, cv2.COLOR_RGBA2RGB)
         
         return screenshot_bgr, timestamp
+    
+
+def adjust_contrast_brightness(cv2_image, contrast_factor, brightness_factor):
+    """ example: (image, contrast_factor=1.5, brightness_factor=1.2) """
+
+    image = Image.fromarray(cv2_image)
+
+    enhancer = ImageEnhance.Brightness(image)
+    image = enhancer.enhance(brightness_factor)
+    
+    enhancer = ImageEnhance.Contrast(image)
+    image = enhancer.enhance(contrast_factor)
+    
+    adjusted_image_cv2 = np.array(image)
+
+    return adjusted_image_cv2
